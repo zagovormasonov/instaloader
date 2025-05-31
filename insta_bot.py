@@ -7,7 +7,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 
 nest_asyncio.apply()
 
-TOKEN = "ВАШ_ТОКЕН_ОТ_БОТА"  # <-- Вставь сюда токен своего Telegram-бота
+TOKEN = "478113079:AAHcNPFtEfpn6O-i52fSvGOTeJgntu2ZgdA"  # <-- Вставь сюда токен своего Telegram-бота
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Привет! Отправь мне ссылку на Instagram-видео.")
