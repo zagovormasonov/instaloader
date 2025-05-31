@@ -4,10 +4,11 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 import asyncio
 import nest_asyncio
+import os
 
 nest_asyncio.apply()
 
-TOKEN = "478113079:AAHcNPFtEfpn6O-i52fSvGOTeJgntu2ZgdA"
+TOKEN = os.getenv("BOT_TOKEN")
 
 # Загрузка cookies
 COOKIES_PATH = "cookies.txt"
