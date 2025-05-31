@@ -3,7 +3,7 @@ import yt_dlp
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 from fastapi import FastAPI, Request
-import nest_asyncio
+import nest_asynciopip
 
 nest_asyncio.apply()
 
