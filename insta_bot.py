@@ -14,7 +14,7 @@ nest_asyncio.apply()
 TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "123456789"))  # Укажи свой Telegram ID
 COOKIES_PATH = "cookies.txt"
-TON_ADDRESS = os.getenv("TON_ADDRESS", "EQ_YOUR_WALLET_ADDRESS")  # Добавь в Render переменную окружения
+TON_ADDRESS = os.getenv("UQA7dn_RUi7WF2E2-gqhK4pmc2n4cx6yEqCb_M-Vn50gxU9s", "EQ_YOUR_WALLET_ADDRESS")  # Добавь в Render переменную окружения
 
 # Инициализация базы
 init_db()
