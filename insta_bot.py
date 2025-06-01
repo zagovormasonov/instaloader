@@ -42,7 +42,7 @@ def download_instagram_video(instagram_url):
 # Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton("Поддержать проект ❤️", url="https://t.me/your_donation_channel")],
+        [InlineKeyboardButton("Поддержать проект ❤️", url="https://www.tbank.ru/cf/Ap5h7Hb6EIV")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
