@@ -1,26 +1,25 @@
 import os
-import time
 import yt_dlp
+from telegram import Update
+from telegram.ext import (
+    ApplicationBuilder, CommandHandler, MessageHandler,
+    ContextTypes, filters
+)
 import asyncio
 import nest_asyncio
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-
-from db import init_db, save_request
+from db import init_db, save_request, get_stats_summary
 
 nest_asyncio.apply()
 
-# Получаем токен из переменной окружения
 TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID", "123456789"))  # Укажи свой Telegram ID
 COOKIES_PATH = "cookies.txt"
 
-# Антиспам: задержка между запросами одного пользователя
-MIN_INTERVAL = 10  # секунд
-last_request_time = {}
+# Инициализация базы
+init_db()
 
-# Функция скачивания видео
-def download_instagram_video(instagram_url, user_id):
-    output_path = f"video_{user_id}.%(ext)s"
+def download_instagram_video(instagram_url):
+    output_path = "video.%(ext)s"
     ydl_opts = {
         'outtmpl': output_path,
         'format': 'best[ext=mp4]',
@@ -32,56 +31,46 @@ def download_instagram_video(instagram_url, user_id):
         info = ydl.extract_info(instagram_url, download=True)
         return ydl.prepare_filename(info)
 
-# Обработчик команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Привет! Пришли ссылку на Instagram-видео, и я его скачаю.")
+    await update.message.reply_text("Привет! Пришли ссылку на Instagram-видео.")
 
-# Обработчик сообщений
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    username = update.effective_user.username or "unknown"
-    text = update.message.text.strip()
-    now = time.time()
-
-    # Антиспам
-    if user_id in last_request_time:
-        delta = now - last_request_time[user_id]
-        if delta < MIN_INTERVAL:
-            await update.message.reply_text(f"⏱ Подожди ещё {int(MIN_INTERVAL - delta)} сек.")
-            return
-
-    last_request_time[user_id] = now
+    text = update.message.text
+    user = update.effective_user
+    username = user.username or "unknown"
 
     if "instagram.com" not in text:
-        await update.message.reply_text("Пожалуйста, пришли ссылку на Instagram-видео.")
+        await update.message.reply_text("Пришли ссылку на Instagram-видео.")
         return
 
-    await update.message.reply_text("⏳ Скачиваю видео, подожди немного...")
+    await update.message.reply_text("Скачиваю видео, подожди...")
 
     try:
-        # Сохраняем статистику
-        save_request(user_id, username, text)
-
-        # Скачиваем видео
-        file_path = download_instagram_video(text, user_id)
+        file_path = download_instagram_video(text)
         await update.message.reply_video(video=open(file_path, 'rb'))
         os.remove(file_path)
-
+        save_request(user.id, username)
     except Exception as e:
-        await update.message.reply_text(f"⚠️ Ошибка: {e}")
+        await update.message.reply_text(f"Ошибка: {e}")
 
-# Главная функция
+async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID:
+        await update.message.reply_text("⛔️ Доступ запрещён.")
+        return
+
+    summary = get_stats_summary()
+    await update.message.reply_text(summary)
+
 async def main():
-    init_db()
-
     app = ApplicationBuilder().token(TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("stats", stats))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
 
     print("Бот запущен")
     await app.run_polling()
 
-# Запуск
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
