@@ -1,51 +1,54 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 
-DB_PATH = "stats.db"
+DB_NAME = "bot.db"
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS requests (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            username TEXT,
-            timestamp TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                username TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                user_id INTEGER PRIMARY KEY,
+                until TIMESTAMP
+            )
+        """)
+        conn.commit()
 
 def save_request(user_id, username):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO requests (user_id, username, timestamp)
-        VALUES (?, ?, ?)
-    ''', (user_id, username, datetime.now().isoformat()))
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("INSERT INTO requests (user_id, username) VALUES (?, ?)", (user_id, username))
+        conn.commit()
 
 def get_stats_summary():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("SELECT COUNT(*) FROM requests")
+        total = c.fetchone()[0]
+        c.execute("SELECT COUNT(DISTINCT user_id) FROM requests")
+        users = c.fetchone()[0]
+        return f"Всего запросов: {total}\nУникальных пользователей: {users}"
 
-    cursor.execute("SELECT COUNT(*) FROM requests")
-    total = cursor.fetchone()[0]
+def is_subscribed(user_id):
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("SELECT until FROM subscriptions WHERE user_id = ?", (user_id,))
+        row = c.fetchone()
+        if row:
+            return datetime.fromisoformat(row[0]) > datetime.now()
+        return False
 
-    cursor.execute("""
-        SELECT COALESCE(username, 'unknown') AS user, COUNT(*) AS c 
-        FROM requests 
-        GROUP BY user 
-        ORDER BY c DESC 
-        LIMIT 5
-    """)
-    top_users = cursor.fetchall()
-    conn.close()
-
-    summary = f"📊 Всего запросов: {total}\n\n👤 Топ пользователей:\n"
-    for username, count in top_users:
-        summary += f"@{username}: {count}\n"
-
-    return summary
+def add_subscription(user_id, days=30):
+    until = datetime.now() + timedelta(days=days)
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("REPLACE INTO subscriptions (user_id, until) VALUES (?, ?)", (user_id, until.isoformat()))
+        conn.commit()
