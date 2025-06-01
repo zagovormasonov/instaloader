@@ -1,5 +1,5 @@
 # Netscape HTTP Cookie File
-.instagram.com	TRUE	/	FALSE	1700000000	sessionid	6936430772%3AXnNp9T8wOY7OZt%3A22%3AAYciW0lwX0UopEN7_HPfzXLwSTidbPhJouR3W5A4Lw
-.instagram.com	TRUE	/	TRUE	1700000000	csrftoken	nO9sMrViESSH0lU0vA8wcpjrTTZLPH8A
+.instagram.com	TRUE	/	FALSE	1700000000	sessionid	6936430772%3AsoYRBxorXEJR3P%3A0%3AAYdiQyo9dit5OfB5OQnKyM403rb01Zok5QohqayQqQ
+.instagram.com	TRUE	/	TRUE	1700000000	csrftoken	yun7drGbM1emi8mEPcFQjH
 .instagram.com	TRUE	/	TRUE	1700000000	ds_user_id	6936430772
-.instagram.com	TRUE	/	TRUE	1700000000	mid	        aDsPsAALAAHVCvikgnXDfUE0QPih
+.instagram.com	TRUE	/	TRUE	1700000000	mid	        aDxnHwALAAGX0eQdLl1uvE0FLTow
